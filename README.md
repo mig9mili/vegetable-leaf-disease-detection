@@ -1,70 +1,212 @@
-# Getting Started with Create React App
+# Potato Disease Classification
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Setup for Python:
 
-## Available Scripts
+1. Install Python ([Setup instructions](https://wiki.python.org/moin/BeginnersGuide))
 
-In the project directory, you can run:
+2. Install Python packages
 
-### `npm start`
+```
+pip3 install -r training/requirements.txt
+pip3 install -r api/requirements.txt
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+3. Install Tensorflow Serving ([Setup instructions](https://www.tensorflow.org/tfx/serving/setup))
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Setup for ReactJS
 
-### `npm test`
+1. Install Nodejs ([Setup instructions](https://nodejs.org/en/download/package-manager/))
+2. Install NPM ([Setup instructions](https://www.npmjs.com/get-npm))
+3. Install dependencies
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+cd frontend
+npm install --from-lock-json
+npm audit fix
+```
 
-### `npm run build`
+4. Copy `.env.example` as `.env`.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+5. Change API url in `.env`.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Setup for React-Native app
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. Go to the [React Native environment setup](https://reactnative.dev/docs/environment-setup), then select `React Native CLI Quickstart` tab.  
 
-### `npm run eject`
+2. Install dependencies
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```bash
+cd mobile-app
+yarn install
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+  - 2.1 Only for mac users
+```bash
+cd ios && pod install && cd ../
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+3. Copy `.env.example` as `.env`.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+4. Change API url in `.env`.
 
-## Learn More
+## Training the Model
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+1. Download the data from [kaggle](https://www.kaggle.com/arjuntejaswi/plant-village).
+2. Only keep folders related to Potatoes.
+3. Run Jupyter Notebook in Browser.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+jupyter notebook
+```
 
-### Code Splitting
+4. Open `training/potato-disease-training.ipynb` in Jupyter Notebook.
+5. In cell #2, update the path to dataset.
+6. Run all the Cells one by one.
+7. Copy the model generated and save it with the version number in the `models` folder.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Running the API
 
-### Analyzing the Bundle Size
+### Using FastAPI
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+1. Get inside `api` folder
 
-### Making a Progressive Web App
+```bash
+cd api
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+2. Run the FastAPI Server using uvicorn
 
-### Advanced Configuration
+```bash
+uvicorn main:app --reload --host 0.0.0.0
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+3. Your API is now running at `0.0.0.0:8000`
 
-### Deployment
+### Using FastAPI & TF Serve
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+1. Get inside `api` folder
 
-### `npm run build` fails to minify
+```bash
+cd api
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+2. Copy the `models.config.example` as `models.config` and update the paths in file.
+3. Run the TF Serve (Update config file path below)
+
+```bash
+docker run -t --rm -p 8501:8501 -v C:/Code/potato-disease-classification:/potato-disease-classification tensorflow/serving --rest_api_port=8501 --model_config_file=/potato-disease-classification/models.config
+```
+
+4. Run the FastAPI Server using uvicorn
+   For this you can directly run it from your main.py or main-tf-serving.py using pycharm run option (as shown in the video tutorial)
+   OR you can run it from command prompt as shown below,
+
+```bash
+uvicorn main-tf-serving:app --reload --host 0.0.0.0
+```
+
+5. Your API is now running at `0.0.0.0:8000`
+
+## Running the Frontend
+
+1. Get inside `api` folder
+
+```bash
+cd frontend
+```
+
+2. Copy the `.env.example` as `.env` and update `REACT_APP_API_URL` to API URL if needed.
+3. Run the frontend
+
+```bash
+npm run start
+```
+
+## Running the app
+
+1. Get inside `mobile-app` folder
+
+```bash
+cd mobile-app
+```
+
+2. Copy the `.env.example` as `.env` and update `URL` to API URL if needed.
+
+3. Run the app (android/iOS)
+
+```bash
+npm run android
+```
+
+or
+
+```bash
+npm run ios
+```
+
+4. Creating public ([signed APK](https://reactnative.dev/docs/signed-apk-android))
+
+
+## Creating the TF Lite Model
+
+1. Run Jupyter Notebook in Browser.
+
+```bash
+jupyter notebook
+```
+
+2. Open `training/tf-lite-converter.ipynb` in Jupyter Notebook.
+3. In cell #2, update the path to dataset.
+4. Run all the Cells one by one.
+5. Model would be saved in `tf-lite-models` folder.
+
+## Deploying the TF Lite on GCP
+
+1. Create a [GCP account](https://console.cloud.google.com/freetrial/signup/tos?_ga=2.25841725.1677013893.1627213171-706917375.1627193643&_gac=1.124122488.1627227734.Cj0KCQjwl_SHBhCQARIsAFIFRVVUZFV7wUg-DVxSlsnlIwSGWxib-owC-s9k6rjWVaF4y7kp1aUv5eQaAj2kEALw_wcB).
+2. Create a [Project on GCP](https://cloud.google.com/appengine/docs/standard/nodejs/building-app/creating-project) (Keep note of the project id).
+3. Create a [GCP bucket](https://console.cloud.google.com/storage/browser/).
+4. Upload the potatoes.h5 model in the bucket in the path `models/potatos.h5`.
+5. Install Google Cloud SDK ([Setup instructions](https://cloud.google.com/sdk/docs/quickstarts)).
+6. Authenticate with Google Cloud SDK.
+
+```bash
+gcloud auth login
+```
+
+7. Run the deployment script.
+
+```bash
+cd gcp
+gcloud functions deploy predict_lite --runtime python38 --trigger-http --memory 512 --project project_id
+```
+
+8. Your model is now deployed.
+9. Use Postman to test the GCF using the [Trigger URL](https://cloud.google.com/functions/docs/calling/http).
+
+Inspiration: https://cloud.google.com/blog/products/ai-machine-learning/how-to-serve-deep-learning-models-using-tensorflow-2-0-with-cloud-functions
+
+## Deploying the TF Model (.h5) on GCP
+
+1. Create a [GCP account](https://console.cloud.google.com/freetrial/signup/tos?_ga=2.25841725.1677013893.1627213171-706917375.1627193643&_gac=1.124122488.1627227734.Cj0KCQjwl_SHBhCQARIsAFIFRVVUZFV7wUg-DVxSlsnlIwSGWxib-owC-s9k6rjWVaF4y7kp1aUv5eQaAj2kEALw_wcB).
+2. Create a [Project on GCP](https://cloud.google.com/appengine/docs/standard/nodejs/building-app/creating-project) (Keep note of the project id).
+3. Create a [GCP bucket](https://console.cloud.google.com/storage/browser/).
+4. Upload the tf .h5 model generate in the bucket in the path `models/potato-model.h5`.
+5. Install Google Cloud SDK ([Setup instructions](https://cloud.google.com/sdk/docs/quickstarts)).
+6. Authenticate with Google Cloud SDK.
+
+```bash
+gcloud auth login
+```
+
+7. Run the deployment script.
+
+```bash
+cd gcp
+gcloud functions deploy predict --runtime python38 --trigger-http --memory 512 --project project_id
+```
+
+8. Your model is now deployed.
+9. Use Postman to test the GCF using the [Trigger URL](https://cloud.google.com/functions/docs/calling/http).
+
+Inspiration: https://cloud.google.com/blog/products/ai-machine-learning/how-to-serve-deep-learning-models-using-tensorflow-2-0-with-cloud-functions
+
